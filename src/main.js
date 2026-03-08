@@ -3,7 +3,13 @@ const MATERIALS = {
   nylon: { name: "Nylon", density: 1150, strength: 75e6 }, // 75 MPa
   fluorocarbon: { name: "Fluorocarbon", density: 1780, strength: 250e6 }, // 250 MPa
   gut: { name: "Gut", density: 1300, strength: 350e6 }, // 350 MPa
+  nylgut: { name: "Nylgut", density: 1325, strength: 510e6 }, // 510 MPa
+  wound: { name: "Classical Wound", density: 4915, strength: 290e6 }, // 290 MPa
   steel: { name: "Steel", density: 7850, strength: 1500e6 }, // 1500 MPa
+  hc_steel: { name: "High Carbon Steel", density: 7850, strength: 2600e6 }, // 2600 MPa
+  phosphor_bronze: { name: "Phosphor Bronze", density: 8830, strength: 900e6 }, // 900 MPa
+  brass: { name: "Brass", density: 8600, strength: 600e6 }, // 600 MPa
+  copper: { name: "Copper (soft)", density: 8940, strength: 220e6 }, // 220 MPa
 };
 
 // Note frequencies
@@ -104,6 +110,11 @@ const btnDeleteString = document.getElementById("btn-delete-string");
 
 // Initialization
 function init() {
+  // Populate material dropdown
+  strMaterial.innerHTML = Object.entries(MATERIALS)
+    .map(([key, mat]) => `<option value="${key}">${mat.name}</option>`)
+    .join("");
+
   resizeCanvas();
   window.addEventListener("resize", resizeCanvas);
 
