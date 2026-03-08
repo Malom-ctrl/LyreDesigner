@@ -1,0 +1,993 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Lyre Designer</title>
+        <link rel="stylesheet" href="/src/index.css" />
+    </head>
+    <body>
+        <!-- Top Right Controls -->
+        <div
+            style="
+                position: absolute;
+                top: 32px;
+                right: 32px;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                z-index: 20;
+            "
+        >
+            <div style="display: flex; gap: 8px">
+                <input
+                    type="file"
+                    id="import-upload"
+                    accept=".json"
+                    class="hidden-input"
+                />
+                <button
+                    id="btn-import"
+                    class="icon-btn-small"
+                    title="Import Design"
+                >
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+                        <path
+                            d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"
+                        ></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                </button>
+                <button
+                    id="btn-export"
+                    class="icon-btn-small"
+                    title="Export Design"
+                >
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+                        <path
+                            d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"
+                        ></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                </button>
+                <button
+                    id="btn-render-open"
+                    class="icon-btn-small"
+                    title="Render Design"
+                >
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+                        <path
+                            d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"
+                        ></path>
+                        <circle cx="12" cy="13" r="4"></circle>
+                    </svg>
+                </button>
+            </div>
+            <div
+                class="scale-slider-container"
+                style="
+                    background: var(--bg-surface);
+                    padding: 8px 16px;
+                    border-radius: 100px;
+                    border: 1px solid var(--border-color);
+                    box-shadow: 0 4px 12px rgba(61, 49, 37, 0.1);
+                "
+            >
+                <label
+                    for="view-zoom"
+                    style="
+                        font-size: 0.75rem;
+                        color: var(--text-secondary);
+                        font-weight: 600;
+                        text-transform: uppercase;
+                        letter-spacing: 0.05em;
+                        margin-right: 8px;
+                    "
+                    >Zoom</label
+                >
+                <input
+                    type="range"
+                    id="view-zoom"
+                    class="slider"
+                    min="0.1"
+                    max="5"
+                    step="0.1"
+                    value="1"
+                    style="width: 100px"
+                />
+            </div>
+        </div>
+
+        <!-- Main Canvas Area -->
+        <main
+            class="main-area"
+            id="canvas-container"
+            style="position: relative"
+        >
+            <canvas id="main-canvas"></canvas>
+
+            <!-- Floating Properties Card -->
+            <div id="properties-card" class="floating-properties-card hidden">
+                <div class="sidebar-content" style="padding: 16px 20px">
+                    <!-- String Properties -->
+                    <div id="string-properties" class="hidden">
+                        <div
+                            style="
+                                display: flex;
+                                justify-content: space-between;
+                                align-items: center;
+                                margin-bottom: 20px;
+                            "
+                        >
+                            <h2
+                                style="
+                                    font-size: 0.75rem;
+                                    color: var(--text-secondary);
+                                    text-transform: uppercase;
+                                    letter-spacing: 0.1em;
+                                    font-weight: 600;
+                                "
+                            >
+                                Selected String
+                            </h2>
+                            <button
+                                id="btn-delete-string"
+                                class="btn btn-danger"
+                                style="padding: 4px 8px; font-size: 0.75rem"
+                            >
+                                Delete
+                            </button>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="str-note">Note</label>
+                            <div style="display: flex; gap: 4px">
+                                <select
+                                    id="str-note-name"
+                                    class="form-control"
+                                    style="padding: 10px 4px"
+                                >
+                                    <option value="C">C</option>
+                                    <option value="C#">C#</option>
+                                    <option value="D">D</option>
+                                    <option value="D#">D#</option>
+                                    <option value="E">E</option>
+                                    <option value="F">F</option>
+                                    <option value="F#">F#</option>
+                                    <option value="G">G</option>
+                                    <option value="G#">G#</option>
+                                    <option value="A">A</option>
+                                    <option value="A#">A#</option>
+                                    <option value="B">B</option>
+                                </select>
+                                <input
+                                    type="number"
+                                    id="str-note-octave"
+                                    class="form-control"
+                                    min="0"
+                                    max="8"
+                                    value="4"
+                                    style="padding: 10px 4px"
+                                />
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 8px">
+                            <div class="form-group" style="flex: 1">
+                                <label for="str-material">Material</label>
+                                <select id="str-material" class="form-control">
+                                    <option value="nylon">Nylon</option>
+                                    <option value="fluorocarbon">
+                                        Fluorocarbon
+                                    </option>
+                                    <option value="gut">Gut</option>
+                                    <option value="steel">Steel</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group" style="width: 80px">
+                                <label
+                                    for="str-diameter"
+                                    title="Diameter (mm)"
+                                    style="
+                                        display: flex;
+                                        align-items: center;
+                                        gap: 4px;
+                                        white-space: nowrap;
+                                    "
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        width="14"
+                                        height="14"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                    >
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <line
+                                            x1="4.93"
+                                            y1="4.93"
+                                            x2="19.07"
+                                            y2="19.07"
+                                        ></line>
+                                    </svg>
+                                    (mm)
+                                </label>
+                                <input
+                                    type="number"
+                                    id="str-diameter"
+                                    step="0.01"
+                                    min="0.1"
+                                    class="form-control"
+                                    style="padding: 10px 4px"
+                                />
+                            </div>
+                        </div>
+
+                        <div
+                            class="metrics-panel"
+                            style="margin-top: 24px; padding-top: 16px"
+                        >
+                            <div class="metric-row">
+                                <span class="metric-label">Length:</span>
+                                <span id="out-length" class="metric-value"
+                                    >0 cm</span
+                                >
+                            </div>
+                            <div class="metric-row">
+                                <span class="metric-label">Frequency:</span>
+                                <span id="out-freq" class="metric-value"
+                                    >0 Hz</span
+                                >
+                            </div>
+                            <div class="metric-row">
+                                <span class="metric-label">Tension:</span>
+                                <span
+                                    id="out-tension"
+                                    class="metric-value badge"
+                                    >0 kg</span
+                                >
+                            </div>
+                            <div class="metric-row">
+                                <span class="metric-label">Stress:</span>
+                                <span id="out-stress" class="metric-value badge"
+                                    >0%</span
+                                >
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Multi-selection UI -->
+                    <div
+                        id="multi-selection-ui"
+                        class="hidden"
+                        style="display: flex; flex-direction: column; gap: 16px"
+                    >
+                        <div
+                            style="
+                                display: flex;
+                                justify-content: space-between;
+                                align-items: center;
+                            "
+                        >
+                            <h2
+                                style="
+                                    font-size: 0.75rem;
+                                    color: var(--text-secondary);
+                                    text-transform: uppercase;
+                                    letter-spacing: 0.1em;
+                                    font-weight: 600;
+                                "
+                            >
+                                Multiple Selected
+                            </h2>
+                        </div>
+                        <div
+                            id="multi-selection-info"
+                            style="
+                                font-size: 13px;
+                                font-weight: 500;
+                                color: var(--text-primary);
+                                margin-bottom: 8px;
+                            "
+                        >
+                            0 items selected
+                        </div>
+
+                        <div
+                            style="
+                                display: flex;
+                                flex-direction: column;
+                                gap: 16px;
+                            "
+                        >
+                            <div
+                                style="
+                                    display: flex;
+                                    flex-direction: column;
+                                    gap: 8px;
+                                "
+                            >
+                                <label
+                                    style="
+                                        font-size: 0.75rem;
+                                        color: var(--text-secondary);
+                                        font-weight: 500;
+                                    "
+                                    >Distribute Horizontally</label
+                                >
+                                <div
+                                    style="
+                                        display: flex;
+                                        align-items: center;
+                                        gap: 8px;
+                                    "
+                                >
+                                    <div class="segmented-control">
+                                        <input
+                                            type="radio"
+                                            id="dir-x-left"
+                                            name="dir-x"
+                                            value="left"
+                                            checked
+                                        />
+                                        <label for="dir-x-left" title="Left"
+                                            ><svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                width="16"
+                                                height="16"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                stroke-width="2"
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                            >
+                                                <line
+                                                    x1="4"
+                                                    y1="21"
+                                                    x2="4"
+                                                    y2="3"
+                                                ></line>
+                                                <line
+                                                    x1="8"
+                                                    y1="12"
+                                                    x2="20"
+                                                    y2="12"
+                                                ></line>
+                                                <polyline
+                                                    points="12 8 8 12 12 16"
+                                                ></polyline></svg
+                                        ></label>
+                                        <input
+                                            type="radio"
+                                            id="dir-x-center"
+                                            name="dir-x"
+                                            value="center"
+                                        />
+                                        <label for="dir-x-center" title="Center"
+                                            ><svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                width="16"
+                                                height="16"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                stroke-width="2"
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                            >
+                                                <line
+                                                    x1="12"
+                                                    y1="21"
+                                                    x2="12"
+                                                    y2="3"
+                                                ></line>
+                                                <line
+                                                    x1="4"
+                                                    y1="12"
+                                                    x2="20"
+                                                    y2="12"
+                                                ></line>
+                                                <polyline
+                                                    points="8 8 12 12 8 16"
+                                                ></polyline>
+                                                <polyline
+                                                    points="16 8 12 12 16 16"
+                                                ></polyline></svg
+                                        ></label>
+                                        <input
+                                            type="radio"
+                                            id="dir-x-right"
+                                            name="dir-x"
+                                            value="right"
+                                        />
+                                        <label for="dir-x-right" title="Right"
+                                            ><svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                width="16"
+                                                height="16"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                stroke-width="2"
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                            >
+                                                <line
+                                                    x1="20"
+                                                    y1="21"
+                                                    x2="20"
+                                                    y2="3"
+                                                ></line>
+                                                <line
+                                                    x1="4"
+                                                    y1="12"
+                                                    x2="16"
+                                                    y2="12"
+                                                ></line>
+                                                <polyline
+                                                    points="12 8 16 12 12 16"
+                                                ></polyline></svg
+                                        ></label>
+                                    </div>
+                                    <input
+                                        type="number"
+                                        id="distribute-spacing-x"
+                                        class="form-control"
+                                        value="10"
+                                        step="1"
+                                        style="
+                                            width: 60px;
+                                            padding: 4px 8px;
+                                            min-height: 32px;
+                                            background: var(--bg-elevated);
+                                            color: var(--text-primary);
+                                        "
+                                    />
+                                    <button
+                                        id="btn-distribute-x"
+                                        class="btn btn-primary"
+                                        style="
+                                            padding: 4px 12px;
+                                            min-height: 32px;
+                                            font-size: 14px;
+                                            display: flex;
+                                            align-items: center;
+                                            justify-content: center;
+                                        "
+                                        title="Distribute Horizontally"
+                                    >
+                                        Apply
+                                    </button>
+                                </div>
+                            </div>
+                            <div
+                                style="
+                                    display: flex;
+                                    flex-direction: column;
+                                    gap: 8px;
+                                "
+                            >
+                                <label
+                                    style="
+                                        font-size: 0.75rem;
+                                        color: var(--text-secondary);
+                                        font-weight: 500;
+                                    "
+                                    >Distribute Vertically</label
+                                >
+                                <div
+                                    style="
+                                        display: flex;
+                                        align-items: center;
+                                        gap: 8px;
+                                    "
+                                >
+                                    <div class="segmented-control">
+                                        <input
+                                            type="radio"
+                                            id="dir-y-top"
+                                            name="dir-y"
+                                            value="top"
+                                            checked
+                                        />
+                                        <label for="dir-y-top" title="Top"
+                                            ><svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                width="16"
+                                                height="16"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                stroke-width="2"
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                            >
+                                                <line
+                                                    x1="3"
+                                                    y1="4"
+                                                    x2="21"
+                                                    y2="4"
+                                                ></line>
+                                                <line
+                                                    x1="12"
+                                                    y1="8"
+                                                    x2="12"
+                                                    y2="20"
+                                                ></line>
+                                                <polyline
+                                                    points="8 12 12 8 16 12"
+                                                ></polyline></svg
+                                        ></label>
+                                        <input
+                                            type="radio"
+                                            id="dir-y-center"
+                                            name="dir-y"
+                                            value="center"
+                                        />
+                                        <label for="dir-y-center" title="Center"
+                                            ><svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                width="16"
+                                                height="16"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                stroke-width="2"
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                            >
+                                                <line
+                                                    x1="3"
+                                                    y1="12"
+                                                    x2="21"
+                                                    y2="12"
+                                                ></line>
+                                                <line
+                                                    x1="12"
+                                                    y1="4"
+                                                    x2="12"
+                                                    y2="20"
+                                                ></line>
+                                                <polyline
+                                                    points="8 8 12 12 16 8"
+                                                ></polyline>
+                                                <polyline
+                                                    points="8 16 12 12 16 16"
+                                                ></polyline></svg
+                                        ></label>
+                                        <input
+                                            type="radio"
+                                            id="dir-y-bottom"
+                                            name="dir-y"
+                                            value="bottom"
+                                        />
+                                        <label for="dir-y-bottom" title="Bottom"
+                                            ><svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                width="16"
+                                                height="16"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                stroke-width="2"
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                            >
+                                                <line
+                                                    x1="3"
+                                                    y1="20"
+                                                    x2="21"
+                                                    y2="20"
+                                                ></line>
+                                                <line
+                                                    x1="12"
+                                                    y1="4"
+                                                    x2="12"
+                                                    y2="16"
+                                                ></line>
+                                                <polyline
+                                                    points="8 12 12 16 16 12"
+                                                ></polyline></svg
+                                        ></label>
+                                    </div>
+                                    <input
+                                        type="number"
+                                        id="distribute-spacing-y"
+                                        class="form-control"
+                                        value="10"
+                                        step="1"
+                                        style="
+                                            width: 60px;
+                                            padding: 4px 8px;
+                                            min-height: 32px;
+                                            background: var(--bg-elevated);
+                                            color: var(--text-primary);
+                                        "
+                                    />
+                                    <button
+                                        id="btn-distribute-y"
+                                        class="btn btn-primary"
+                                        style="
+                                            padding: 4px 12px;
+                                            min-height: 32px;
+                                            font-size: 14px;
+                                            display: flex;
+                                            align-items: center;
+                                            justify-content: center;
+                                        "
+                                        title="Distribute Vertically"
+                                    >
+                                        Apply
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Left Controls: Scale Indicator -->
+            <div class="bottom-left-controls">
+                <div class="scale-ruler-container">
+                    <div id="scale-tooltip" class="scale-tooltip hidden">
+                        <input
+                            type="number"
+                            id="scale-value-input"
+                            class="scale-value-input"
+                            step="0.1"
+                        />
+                        <span class="scale-unit">px/cm</span>
+                        <button
+                            id="btn-reset-scale"
+                            class="mini-lock-btn"
+                            title="Reset to Default (10 px/cm)"
+                        >
+                            <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2.5"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <path
+                                    d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"
+                                ></path>
+                                <path d="M3 3v5h5"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="scale-ruler" class="scale-ruler">
+                        <div
+                            id="scale-handle"
+                            class="scale-handle"
+                            title="Drag to calibrate scale"
+                        ></div>
+                    </div>
+                    <span class="scale-label">10 cm</span>
+                </div>
+            </div>
+
+            <!-- Bottom Right Controls -->
+            <div class="bottom-right-controls">
+                <div class="action-row">
+                    <!-- BG Controls -->
+                    <div id="bg-controls" class="bg-controls-inline">
+                        <button
+                            id="btn-lock-bg"
+                            class="icon-btn-small"
+                            title="Lock/Unlock Background (When unlocked, you can move and scale the background image)"
+                        >
+                            <svg
+                                id="icon-lock-bg"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <rect
+                                    x="3"
+                                    y="11"
+                                    width="18"
+                                    height="11"
+                                    rx="2"
+                                    ry="2"
+                                ></rect>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                            </svg>
+                        </button>
+                        <div class="divider"></div>
+                        <div
+                            style="
+                                display: flex;
+                                align-items: center;
+                                gap: 12px;
+                            "
+                        >
+                            <label
+                                style="
+                                    font-size: 0.75rem;
+                                    color: var(--text-secondary);
+                                    font-weight: 500;
+                                "
+                                >Opacity</label
+                            >
+                            <input
+                                type="range"
+                                id="bg-opacity"
+                                class="slider slider-small"
+                                min="0"
+                                max="1"
+                                step="0.05"
+                                value="0.5"
+                            />
+                        </div>
+                    </div>
+
+                    <input
+                        type="file"
+                        id="bg-upload"
+                        accept="image/*"
+                        class="hidden-input"
+                    />
+                    <button
+                        id="btn-upload-bg"
+                        class="icon-btn"
+                        title="Upload Background Image"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
+                            <rect
+                                x="3"
+                                y="3"
+                                width="18"
+                                height="18"
+                                rx="2"
+                                ry="2"
+                            ></rect>
+                            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                            <polyline points="21 15 16 10 5 21"></polyline>
+                        </svg>
+                    </button>
+
+                    <button
+                        id="btn-measure"
+                        class="icon-btn"
+                        title="Measure Distance"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
+                            <path
+                                d="M21.3 15.3l-6.6-6.6a2 2 0 0 0-2.8 0l-9.2 9.2a2 2 0 0 0 0 2.8l6.6 6.6a2 2 0 0 0 2.8 0l9.2-9.2a2 2 0 0 0 0-2.8z"
+                            ></path>
+                            <path d="M14 10l2 2"></path>
+                            <path d="M10 14l2 2"></path>
+                            <path d="M6 18l2 2"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <script type="module" src="/src/main.js"></script>
+
+        <!-- Render Options Modal -->
+        <div id="render-modal" class="modal-overlay hidden">
+            <div class="modal-content">
+                <div
+                    style="
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        margin-bottom: 24px;
+                    "
+                >
+                    <h2
+                        style="
+                            font-size: 1rem;
+                            font-weight: 600;
+                            color: var(--text-primary);
+                        "
+                    >
+                        Render Options
+                    </h2>
+                    <button
+                        id="btn-render-close"
+                        class="icon-btn-small"
+                        style="
+                            box-shadow: none;
+                            border: none;
+                            background: transparent;
+                        "
+                    >
+                        <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="form-group">
+                    <label>Format</label>
+                    <div style="display: flex; gap: 16px; margin-top: 8px">
+                        <label class="radio-label">
+                            <input
+                                type="radio"
+                                name="render-format"
+                                value="png"
+                                checked
+                            />
+                            PNG
+                        </label>
+                        <label class="radio-label">
+                            <input
+                                type="radio"
+                                name="render-format"
+                                value="svg"
+                            />
+                            SVG
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-top: 20px">
+                    <label>Include in Render</label>
+                    <div
+                        style="
+                            display: grid;
+                            grid-template-columns: 1fr 1fr;
+                            gap: 12px;
+                            margin-top: 12px;
+                        "
+                    >
+                        <label class="toggle-label-small">
+                            <input
+                                type="checkbox"
+                                id="render-inc-strings"
+                                checked
+                            />
+                            Strings
+                        </label>
+                        <label class="toggle-label-small">
+                            <input
+                                type="checkbox"
+                                id="render-inc-pins"
+                                checked
+                            />
+                            Tuning Pins
+                        </label>
+                        <label class="toggle-label-small">
+                            <input
+                                type="checkbox"
+                                id="render-inc-eyelets"
+                                checked
+                            />
+                            Eyelets
+                        </label>
+                        <label class="toggle-label-small">
+                            <input
+                                type="checkbox"
+                                id="render-inc-bridges"
+                                checked
+                            />
+                            Bridges
+                        </label>
+                        <label class="toggle-label-small">
+                            <input
+                                type="checkbox"
+                                id="render-inc-labels"
+                                checked
+                            />
+                            Note Labels
+                        </label>
+                        <label class="toggle-label-small">
+                            <input
+                                type="checkbox"
+                                id="render-inc-colors"
+                                checked
+                            />
+                            Stress Colors
+                        </label>
+                        <label class="toggle-label-small">
+                            <input type="checkbox" id="render-inc-bg" checked />
+                            Background
+                        </label>
+                        <label class="toggle-label-small">
+                            <input type="checkbox" id="render-inc-grid" /> Grid
+                        </label>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 16px; margin-top: 20px">
+                    <div class="form-group" style="flex: 1">
+                        <label for="render-margin">Margin (px)</label>
+                        <input
+                            type="number"
+                            id="render-margin"
+                            class="form-control"
+                            value="50"
+                            min="0"
+                            style="margin-top: 8px"
+                        />
+                    </div>
+                    <div id="dpi-container" class="form-group" style="flex: 1">
+                        <label for="render-dpi">DPI (PNG only)</label>
+                        <input
+                            type="number"
+                            id="render-dpi"
+                            class="form-control"
+                            value="96"
+                            min="72"
+                            step="1"
+                            style="margin-top: 8px"
+                        />
+                    </div>
+                </div>
+
+                <button
+                    id="btn-render-execute"
+                    class="btn btn-primary"
+                    style="width: 100%; margin-top: 24px; padding: 12px"
+                >
+                    Download Render
+                </button>
+            </div>
+        </div>
+    </body>
+</html>
